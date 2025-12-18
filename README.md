@@ -1,0 +1,1 @@
+# sociiete.generale2025
